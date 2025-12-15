@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Speech Therapy – Word Practice</title>
+  <style>
+    :root {
+      --bg: #f2f4f8;
+      --card: #ffffff;
+      --primary: #6b8afd;      /* calm blue */
+      --accent: #8bc6a8;       /* soft green */
+      --danger: #c4c9d4;       /* neutral gray */
+      --text: #1f2937;
+      --muted: #6b7280;
+    }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      position: relative;
+      max-width: 520px;
+      margin: 60px auto;
+      padding: 36px 32px 40px;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.9em;
+    }
+
+    p {
+      color: var(--muted);
+      font-size: 0.95em;
+      margin-bottom: 24px;
+    }
+
+    input[type="file"] {
+      margin-bottom: 20px;
+    }
+
+    .buttons {
+      margin-top: 10px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      margin: 6px;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    button.secondary {
+      background: var(--accent);
+      color: #0f3d2e;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    }
+
+    #word {
+      margin-top: 36px;
+      font-size: 2.6em;
+      letter-spacing: 6px;
+      font-weight: 600;
+    }
+
+    /* Exit (X) button */
+    #exitBtn {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--danger);
+      color: #374151;
+      font-size: 1.2em;
+      line-height: 36px;
+      text-align: center;
+      cursor: pointer;
+      display: none;
+      user-select: none;
+    }
+
+    #exitBtn:hover {
+      background: #b8bdc8;
+    }
+
+    footer {
+      margin-top: 34px;
+      font-size: 0.8em;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="exitBtn" title="End practice">×</div>
+
+    <h1>Word Practice</h1>
+
+    <input type="file" id="fileInput" accept=".txt" />
+
+    <div class="buttons">
+      <button id="randomBtn" class="primary">Play</button>
+      <button id="revealBtn" class="secondary" style="display:none;">Reveal</button>
+    </div>
+
+    <div id="word"></div>
+  </div>
+
+  <script>
+    let words = [
+      'H#äu#ser',
+      'Sch#eu#ne',
+      'h#eu#len',
+      'B#äu#me',
+      'L#eu#te',
+      'h#eu#te'
+    ];
+
+    let currentWord = '';
+
+    const randomBtn = document.getElementById('randomBtn');
+    const revealBtn = document.getElementById('revealBtn');
+    const exitBtn = document.getElementById('exitBtn');
+    const wordEl = document.getElementById('word');
+    const fileInput = document.getElementById('fileInput');
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        words = event.target.result
+          .split(/\r?\n/)
+          .map(w => w.trim())
+          .filter(Boolean);
+      };
+      reader.readAsText(file);
+    });
+
+    function maskWord(word) {
+      let hide = false;
+      return word
+        .split('')
+        .map(char => {
+          if (char === '#') {
+            hide = !hide;
+            return '';
+          }
+          return hide ? '_' : char;
+        })
+        .join('');
+    }
+
+    function revealWord(word) {
+      return word.replace(/#/g, '');
+    }
+
+    function enterPlayMode() {
+      randomBtn.style.display = 'none';
+      revealBtn.style.display = 'inline-block';
+      exitBtn.style.display = 'block';
+      fileInput.style.display = 'none';
+    }
+
+    function exitPlayMode() {
+      currentWord = '';
+      wordEl.textContent = '';
+      randomBtn.style.display = 'inline-block';
+      revealBtn.style.display = 'none';
+      exitBtn.style.display = 'none';
+      fileInput.style.display = 'inline-block';
+    }
+
+    randomBtn.addEventListener('click', () => {
+      if (words.length === 0) return;
+      currentWord = words[Math.floor(Math.random() * words.length)];
+      wordEl.textContent = maskWord(currentWord);
+      enterPlayMode();
+    });
+
+    revealBtn.addEventListener('click', () => {
+      if (!currentWord) return;
+      wordEl.textContent = revealWord(currentWord);
+    });
+
+    exitBtn.addEventListener('click', exitPlayMode);
+
+    // Sanity checks
+    console.assert(maskWord('h#äu#ser') === 'h__ser');
+    console.assert(revealWord('h#äu#ser') === 'häuser');
+  </script>
+</body>
+</html>
