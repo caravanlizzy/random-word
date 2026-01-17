@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>Speech Therapy – Word Practice</title>
+  <title>Sprachtherapie – Wortübungen</title>
   <style>
     :root {
       --bg: #f2f4f8;
@@ -217,13 +217,13 @@
 </head>
 <body>
   <div class="container">
-    <div id="exitBtn" title="End practice">×</div>
+    <div id="exitBtn" title="Übung beenden">×</div>
 
-    <h1>Word Practice</h1>
+    <h1 id="title">Wortübungen</h1>
 
     <div class="file-upload" id="uploadArea">
       <label for="fileInput" class="file-label">
-        <span>Click to upload .txt words</span>
+        <span>Klicken, um .txt Wörter hochzuladen</span>
         <input type="file" id="fileInput" accept=".txt" />
         <span id="fileName"></span>
       </label>
@@ -246,9 +246,9 @@
     </div>
 
     <div class="buttons">
-      <button id="randomBtn" class="primary">Play</button>
-      <button id="revealBtn" class="secondary" style="display:none;">Reveal</button>
-      <button id="nextBtn" class="primary" style="display:none;">Next</button>
+      <button id="randomBtn" class="primary">Start</button>
+      <button id="revealBtn" class="secondary" style="display:none;">Aufdecken</button>
+      <button id="nextBtn" class="primary" style="display:none;">Nächstes</button>
     </div>
 
     <div id="word"></div>
@@ -270,6 +270,7 @@
     const revealBtn = document.getElementById('revealBtn');
     const nextBtn = document.getElementById('nextBtn');
     const exitBtn = document.getElementById('exitBtn');
+    const titleEl = document.getElementById('title');
     const wordEl = document.getElementById('word');
     const fileInput = document.getElementById('fileInput');
     const fileName = document.getElementById('fileName');
@@ -335,6 +336,7 @@
       nextBtn.style.display = 'inline-block';
       exitBtn.style.display = 'block';
       uploadArea.style.display = 'none';
+      titleEl.style.display = 'none';
     }
 
     function exitPlayMode() {
@@ -345,6 +347,7 @@
       nextBtn.style.display = 'none';
       exitBtn.style.display = 'none';
       uploadArea.style.display = 'block';
+      titleEl.style.display = 'block';
     }
 
     function pickNextWord() {
@@ -367,7 +370,7 @@
 
     exitBtn.addEventListener('click', exitPlayMode);
 
-    // Sanity checks
+    // Tests
     console.assert(maskWord('h#äu#ser') === 'h__ser');
     console.assert(revealWord('h#äu#ser') === 'häuser');
   </script>
