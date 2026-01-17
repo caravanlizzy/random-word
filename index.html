@@ -44,8 +44,39 @@
       margin-bottom: 24px;
     }
 
-    input[type="file"] {
-      margin-bottom: 20px;
+    /* Custom File Upload */
+    .file-upload {
+      margin-bottom: 24px;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .file-label {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #fff;
+      border: 2px dashed var(--danger);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--muted);
+      font-size: 0.95em;
+    }
+
+    .file-label:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #f8faff;
+    }
+
+    #fileName {
+      display: block;
+      margin-top: 8px;
+      font-size: 0.85em;
+      color: var(--primary);
+      font-weight: 500;
     }
 
     .buttons {
@@ -106,6 +137,77 @@
       background: #b8bdc8;
     }
 
+    /* Info Icon & Modal */
+    .info-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      background: var(--danger);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-left: 8px;
+      vertical-align: middle;
+      transition: background 0.2s;
+    }
+
+    .info-icon:hover {
+      background: var(--primary);
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      max-width: 400px;
+      width: 90%;
+      text-align: left;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .modal h2 {
+      margin-top: 0;
+      font-size: 1.4em;
+      color: var(--primary);
+    }
+
+    .modal p, .modal ul {
+      font-size: 0.9em;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    .modal ul {
+      padding-left: 20px;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 1.5em;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
     footer {
       margin-top: 34px;
       font-size: 0.8em;
@@ -119,11 +221,34 @@
 
     <h1>Word Practice</h1>
 
-    <input type="file" id="fileInput" accept=".txt" />
+    <div class="file-upload" id="uploadArea">
+      <label for="fileInput" class="file-label">
+        <span>Click to upload .txt words</span>
+        <input type="file" id="fileInput" accept=".txt" />
+        <span id="fileName"></span>
+      </label>
+      <span class="info-icon" id="infoBtn">?</span>
+    </div>
+
+    <!-- Modal for rules -->
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal">
+        <span class="modal-close" id="closeModal">&times;</span>
+        <h2>Regeln für die Text-Datei</h2>
+        <p>So erstellst du deine eigene Wörter-Liste:</p>
+        <ul>
+          <li>Schreibe ein Wort pro Zeile.</li>
+          <li>Benutze das Zeichen <strong>#</strong> vor und nach dem Teil, den du verstecken willst.</li>
+          <li><strong>Beispiel:</strong> Wenn du <code>H#äu#ser</code> schreibst, sieht man im Spiel <code>H__ser</code>.</li>
+        </ul>
+        <p>Speichere die Datei als <strong>.txt</strong> ab.</p>
+      </div>
+    </div>
 
     <div class="buttons">
       <button id="randomBtn" class="primary">Play</button>
       <button id="revealBtn" class="secondary" style="display:none;">Reveal</button>
+      <button id="nextBtn" class="primary" style="display:none;">Next</button>
     </div>
 
     <div id="word"></div>
@@ -143,13 +268,38 @@
 
     const randomBtn = document.getElementById('randomBtn');
     const revealBtn = document.getElementById('revealBtn');
+    const nextBtn = document.getElementById('nextBtn');
     const exitBtn = document.getElementById('exitBtn');
     const wordEl = document.getElementById('word');
     const fileInput = document.getElementById('fileInput');
+    const fileName = document.getElementById('fileName');
+    const uploadArea = document.getElementById('uploadArea');
+    const infoBtn = document.getElementById('infoBtn');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const closeModal = document.getElementById('closeModal');
+
+    infoBtn.addEventListener('click', () => {
+      modalOverlay.style.display = 'flex';
+    });
+
+    closeModal.addEventListener('click', () => {
+      modalOverlay.style.display = 'none';
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        modalOverlay.style.display = 'none';
+      }
+    });
 
     fileInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
-      if (!file) return;
+      if (!file) {
+        fileName.textContent = '';
+        return;
+      }
+
+      fileName.textContent = file.name;
 
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -182,8 +332,9 @@
     function enterPlayMode() {
       randomBtn.style.display = 'none';
       revealBtn.style.display = 'inline-block';
+      nextBtn.style.display = 'inline-block';
       exitBtn.style.display = 'block';
-      fileInput.style.display = 'none';
+      uploadArea.style.display = 'none';
     }
 
     function exitPlayMode() {
@@ -191,16 +342,23 @@
       wordEl.textContent = '';
       randomBtn.style.display = 'inline-block';
       revealBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
       exitBtn.style.display = 'none';
-      fileInput.style.display = 'inline-block';
+      uploadArea.style.display = 'block';
     }
 
-    randomBtn.addEventListener('click', () => {
+    function pickNextWord() {
       if (words.length === 0) return;
       currentWord = words[Math.floor(Math.random() * words.length)];
       wordEl.textContent = maskWord(currentWord);
+    }
+
+    randomBtn.addEventListener('click', () => {
+      pickNextWord();
       enterPlayMode();
     });
+
+    nextBtn.addEventListener('click', pickNextWord);
 
     revealBtn.addEventListener('click', () => {
       if (!currentWord) return;
